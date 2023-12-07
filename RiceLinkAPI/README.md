@@ -1,0 +1,3 @@
+# RiceLinkAPI
+ 
+ This project involves developing an API for a Canadian rice importing company with a significant warehouse capacity, sourcing its products primarily from Asian countries. The company, already operating an e-commerce store, aims to extend its business capabilities by offering an API for third-party Canadian retailers like Walmart, No Frills, and other supermarkets. This API will facilitate seamless order placement and inventory management for these retailers. The backend of the API will be developed using ASP.NET, ensuring robustness and scalability, while the frontend can be developed using a flexible choice of programming languages to accommodate various consumer needs.
