@@ -47,7 +47,7 @@ namespace RiceLinkAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
-
+            //searches and matches the product based on name entered by user
             var matchingProducts = await _context.Products
                                                 .Where(p => EF.Functions.Like(p.Name, $"%{searchModel.Name}%"))
                                                 .ToListAsync();
