@@ -139,6 +139,65 @@ namespace RiceLinkAPI.Controllers
             }
         }
 
+        // PATCH: api/Product
+        [HttpPatch]
+        public async Task<IActionResult> PatchProduct([FromBody] PatchProductRequest productUpdate)
+        {
+            if (!productUpdate.Id.HasValue)
+            {
+                return BadRequest("Product ID is required");
+            }
+
+            var product = await _context.Products.FindAsync(productUpdate.Id);
+
+            if (product == null)
+            {
+                return NotFound("Product not found");
+            }
+
+            // Update the product with new values from productUpdate
+            if (productUpdate.Name != null)
+                product.Name = productUpdate.Name;
+
+            if (productUpdate.Origin != null)
+                product.Origin = productUpdate.Origin;
+
+            if (productUpdate.PackageSize != null)
+                product.PackageSize = productUpdate.PackageSize;
+
+            if (productUpdate.Price.HasValue)
+                product.Price = productUpdate.Price.Value;
+
+            if (productUpdate.Currency != null)
+                product.Currency = productUpdate.Currency;
+
+            if (productUpdate.InStock.HasValue)
+                product.InStock = productUpdate.InStock.Value;
+
+            if (productUpdate.Quantity.HasValue)
+                product.Quantity = productUpdate.Quantity.Value;
+
+            if (productUpdate.Description != null)
+                product.Description = productUpdate.Description;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(product);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Products.Any(e => e.Id == productUpdate.Id))
+                {
+                    return NotFound("Product not found");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
 
 
     }
