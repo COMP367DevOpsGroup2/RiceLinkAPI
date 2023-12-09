@@ -61,6 +61,27 @@ namespace RiceLinkAPI.Controllers
         }
 
 
+        // POST: api/Product
+        [HttpPost]
+        public async Task<ActionResult<Product>> AddProduct([FromBody] CreateProductRequest request)
+        {
+            var newProduct = new Product
+            {
+                Name = request.Name,
+                Origin = request.Origin,
+                PackageSize = request.PackageSize,
+                Price = request.Price,
+                Currency = request.Currency,
+                InStock = request.InStock,
+                Quantity = request.Quantity,
+                Description = request.Description
+            };
+
+            _context.Products.Add(newProduct);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetProduct), new { id = newProduct.Id }, newProduct);
+        }
 
     }
 }
