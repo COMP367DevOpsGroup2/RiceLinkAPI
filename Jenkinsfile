@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Add steps to build your ASP.NET project
+                // steps to build ASP.NET project
                 script {
                     // Use .NET Core CLI or MSBuild as needed
                     bat 'dotnet build'
@@ -23,7 +23,7 @@ pipeline {
 
         stage('Deliver') {
             steps {
-                // Steps to package your application
+                // Steps to package the application
                 script {
                     bat 'dotnet publish -c Release -o ./publish'
                 }
