@@ -198,6 +198,21 @@ namespace RiceLinkAPI.Controllers
             }
         }
 
+        // DELETE: api/Product?id=5
+        [HttpDelete]
+        public async Task<IActionResult> DeleteProduct([FromQuery] int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+                return NotFound("Product not found");
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // NoContent (204) for successful DELETE requests
+        }
+
+
 
 
     }
