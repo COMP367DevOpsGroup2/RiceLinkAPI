@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RiceLinkAPI.Models.Customer;
 using RiceLinkAPI.Models.Products;
 using System;
 
@@ -13,6 +14,7 @@ namespace RiceLinkAPI.Models
         }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<CustomerModel> CustomerModel { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
