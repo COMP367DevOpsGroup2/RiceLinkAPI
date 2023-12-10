@@ -85,5 +85,35 @@ namespace RiceLinkAPI.Controllers
             return NoContent();
         }
 
+        // PATCH: api/Customer
+        [HttpPatch]
+        public async Task<IActionResult> PatchCustomer([FromBody] PatchCustomerRequest request)
+        {
+            var customer = await _context.CustomerModel.FindAsync(request.CustomerId);
+
+            if (customer == null)
+            {
+                return NotFound("Customer not found");
+            }
+
+            if (request.FirstName != null)
+                customer.FirstName = request.FirstName;
+            if (request.LastName != null)
+                customer.LastName = request.LastName;
+            if (request.Email != null)
+                customer.Email = request.Email;
+            if (request.Phone != null)
+                customer.Phone = request.Phone;
+            if (request.Company != null)
+                customer.Company = request.Company;
+            if (request.Address != null)
+                customer.Address = request.Address;
+
+            _context.Entry(customer).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }

@@ -2,32 +2,31 @@
 
 namespace RiceLinkAPI.Models.Customer
 {
-    public class UpsertCustomerRequest
+    public class PatchCustomerRequest
     {
         [Required(ErrorMessage = "CustomerId is required.")]
         public int CustomerId { get; set; }
 
-        [Required(ErrorMessage = "FirstName is required.")]
+      
         [StringLength(50, ErrorMessage = "FirstName size must be less than 50 characters.")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
-        [Required(ErrorMessage = "LastName is required.")]
+ 
         [StringLength(50, ErrorMessage = "LastName size must be less than 50 characters.")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
+
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email format.")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
 
         [Required(ErrorMessage = "Phone is required.")]
         [Phone(ErrorMessage = "Invalid phone number format.")]
-        [StringLength(20, ErrorMessage = "Phone number must be less than 20 characters.")]
-        public string Phone { get; set; }
-
         [StringLength(50, ErrorMessage = "Company must be less than 50 characters.")]
         public string? Company { get; set; }
-        [Required(ErrorMessage = "Address is required.")]
+
+    
         [StringLength(200, ErrorMessage = "Address must be less than 200 characters.")]
-        public string Address { get; set; }
+        public string? Address { get; set; }
     }
 }
-
