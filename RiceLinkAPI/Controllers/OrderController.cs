@@ -349,6 +349,69 @@ namespace RiceLinkAPI.Controllers
             }
         }//End PatchOrder
 
+        // DELETE: api/Order?orderId=2&itemId=1 (itemId is optional)
+        [HttpDelete]
+        public async Task<ActionResult> DeleteOrder([FromQuery] int orderId, [FromQuery] int? itemId = null)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.OrderId == orderId);
+                    if (order == null)
+                    {
+                        return NotFound("Order not found");
+                    }
+
+                    if (itemId.HasValue)
+                    {
+                        var itemToDelete = order.Items.FirstOrDefault(i => i.Id == itemId.Value);
+                        if (itemToDelete == null)
+                        {
+                            return NotFound($"Order item with ID {itemId.Value} not found in order {orderId}.");
+                        }
+
+                        // If the order is "Reserved", adjust the product quantity
+                        if (order.Status == "Reserved")
+                        {
+                            var product = await _context.Products.FindAsync(itemToDelete.ProductId);
+                            if (product != null)
+                            {
+                                product.Quantity += itemToDelete.Quantity;
+                            }
+                        }
+
+                        _context.OrderItem.Remove(itemToDelete);
+                    }
+                    else
+                    {
+                        // Revert quantities and delete the order if it's "Reserved"
+                        if (order.Status == "Reserved")
+                        {
+                            foreach (var item in order.Items)
+                            {
+                                var product = await _context.Products.FindAsync(item.ProductId);
+                                if (product != null)
+                                {
+                                    product.Quantity += item.Quantity;
+                                }
+                            }
+                        }
+                        _context.Orders.Remove(order);
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Ok(new { message = itemId.HasValue ? $"Order item with ID {itemId.Value} deleted from order {orderId}." : $"Order {orderId} deleted." });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return BadRequest(ex.Message);
+                }
+            }
+        }//End DeleteOrder
 
     }//End of Controller 
 }
