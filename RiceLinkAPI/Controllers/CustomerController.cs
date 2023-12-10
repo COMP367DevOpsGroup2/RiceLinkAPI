@@ -115,5 +115,21 @@ namespace RiceLinkAPI.Controllers
             return NoContent();
         }
 
+        // DELETE: api/Customer?CustomerId=5
+        [HttpDelete]
+        public async Task<IActionResult> DeleteCustomer([FromQuery] int customerId)
+        {
+            var customer = await _context.CustomerModel.FindAsync(customerId);
+            if (customer == null)
+            {
+                return NotFound("Customer not found");
+            }
+
+            _context.CustomerModel.Remove(customer);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }
