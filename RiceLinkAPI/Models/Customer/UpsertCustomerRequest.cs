@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+#nullable disable
+
 namespace RiceLinkAPI.Models.Customer
 {
     public class UpsertCustomerRequest
@@ -29,3 +31,4 @@ namespace RiceLinkAPI.Models.Customer
     }
 }
 
+#nullable restore

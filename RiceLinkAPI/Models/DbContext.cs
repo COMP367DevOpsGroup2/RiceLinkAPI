@@ -11,7 +11,10 @@ namespace RiceLinkAPI.Models
         public AppDbContext(DbContextOptions<AppDbContext> options)
        : base(options)
         {
-
+            Products = Set<Product>();
+            CustomerModel = Set<CustomerModel>();
+            Orders = Set<Order>();
+            OrderItem = Set<OrderItem>();
         }
 
         public DbSet<Product> Products { get; set; }

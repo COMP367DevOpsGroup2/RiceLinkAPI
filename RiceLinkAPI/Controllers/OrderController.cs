@@ -81,5 +81,89 @@ namespace RiceLinkAPI.Controllers
             return Ok(orderDto);
         }//End GetOrder
 
+        // POST: api/Order
+        [HttpPost]
+        public async Task<ActionResult<OrderDto>> CreateOrder([FromBody] OrderModel orderModel)
+        {
+            // Check if CustomerId is valid
+            var customer = await _context.CustomerModel.FindAsync(orderModel.CustomerId);
+            if (customer == null)
+            {
+                return BadRequest("Invalid CustomerId");
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    List<OrderItem> orderItems = new List<OrderItem>();
+                    foreach (var item in orderModel.Items)
+                    {
+                        var product = await _context.Products
+                            .Where(p => p.Id == item.ProductId)
+                            .FirstOrDefaultAsync();
+
+                        if (product == null)
+                        {
+                            throw new InvalidOperationException($"ProductId {item.ProductId} not found.");
+                        }
+
+                        if (item.Quantity > product.Quantity)
+                        {
+                            throw new InvalidOperationException($"Insufficient quantity for ProductId {item.ProductId}. Available quantity: {product.Quantity}.");
+                        }
+
+                        // Deduct the quantity from the product
+                        product.Quantity -= item.Quantity;
+
+                        var orderItem = new OrderItem
+                        {
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity,
+                            UnitPrice = product.Price
+                        };
+                        orderItems.Add(orderItem);
+                    }
+
+                    var newOrder = new Order
+                    {
+                        CustomerId = orderModel.CustomerId,
+                        OrderDate = orderModel.OrderDate,
+                        Status = "Reserved",
+                        Items = orderItems,
+                        TotalPrice = orderItems.Sum(i => i.UnitPrice * i.Quantity)
+                    };
+
+                    _context.Orders.Add(newOrder);
+                    await _context.SaveChangesAsync();
+
+                    // The IDs should be updated after SaveChangesAsync
+                    var orderDto = new OrderDto
+                    {
+                        OrderId = newOrder.OrderId,
+                        OrderDate = newOrder.OrderDate,
+                        Status = newOrder.Status,
+                        TotalPrice = newOrder.TotalPrice,
+                        Items = newOrder.Items.Select(i => new OrderItemDto
+                        {
+                            Id = i.Id,
+                            ProductId = i.ProductId,
+                            Quantity = i.Quantity,
+                            UnitPrice = i.UnitPrice
+                        }).ToList()
+                    };
+
+                    await transaction.CommitAsync();
+
+                    return CreatedAtAction(nameof(GetOrder), new { id = orderDto.OrderId }, orderDto);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return BadRequest(ex.Message);
+                }
+            }
+        }//End CreateOrder
+
     }//End of Controller 
 }
