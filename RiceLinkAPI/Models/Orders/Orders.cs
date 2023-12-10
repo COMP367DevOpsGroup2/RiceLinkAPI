@@ -60,7 +60,76 @@ namespace RiceLinkAPI.Models.Orders
         public virtual Order Order { get; set; }
     }
 
- 
+    public class UpdateOrderModel
+    {
+        [Required]
+        public int OrderId { get; set; }
+
+        [Required]
+        public int CustomerId { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime OrderDate { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        public string Status { get; set; } = string.Empty;
+
+        [Required]
+        public decimal TotalPrice { get; set; }
+
+        [Required]
+        public List<UpdateOrderItemModel> Items { get; set; } = new List<UpdateOrderItemModel>();
+    }
+
+    public class UpdateOrderItemModel
+    {
+        [Required]
+        public int ProductId { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
+        public int Quantity { get; set; }
+
+        [Required]
+        public decimal UnitPrice { get; set; }
+    }
+
+    public class PatchOrderModel
+    {
+        [Required]
+        public int OrderId { get; set; }
+
+        [Required]
+        public int CustomerId { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime? OrderDate { get; set; }
+
+        [StringLength(255)]
+        public string? Status { get; set; }
+
+        public decimal? TotalPrice { get; set; }
+
+        public List<PatchOrderItemModel> Items { get; set; } = new List<PatchOrderItemModel>();
+    }
+
+    public class PatchOrderItemsModel
+    {
+        [Required]
+        public int OrderId { get; set; }
+
+        public List<PatchOrderItemModel> Items { get; set; } = new List<PatchOrderItemModel>();
+    }
+    public class PatchOrderItemModel
+    {
+        [Required]
+        public int ProductId { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
+        public int Quantity { get; set; }
+    }
 
 }
 
