@@ -41,5 +41,24 @@ namespace RiceLinkAPI.Controllers
             return customer;
         }
 
+        // POST: api/Customer
+        [HttpPost]
+        public async Task<ActionResult<CustomerModel>> CreateCustomer([FromBody] CreateCustomerRequest request)
+        {
+            var customer = new CustomerModel
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                Phone = request.Phone,
+                Company = request.Company,
+                Address = request.Address
+            };
+
+            _context.CustomerModel.Add(customer);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetCustomer), new { customerId = customer.CustomerId }, customer);
+        }
     }
 }
