@@ -165,5 +165,190 @@ namespace RiceLinkAPI.Controllers
             }
         }//End CreateOrder
 
+        // PUT: api/Order
+        [HttpPut]
+        public async Task<ActionResult<OrderDto>> UpdateOrder([FromBody] UpdateOrderModel orderModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("JSON Format Error");
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var order = await _context.Orders
+                        .Include(o => o.Items)
+                        .FirstOrDefaultAsync(o => o.OrderId == orderModel.OrderId);
+
+                    if (order == null)
+                    {
+                        return NotFound("Order not found");
+                    }
+
+                    // Update editable fields
+                    order.OrderDate = orderModel.OrderDate;
+                    order.Status = orderModel.Status;
+
+                    // Change status only if it is "Reserved" or "Completed"
+                    if (orderModel.Status == "Reserved" || orderModel.Status == "Completed")
+                    {
+                        order.Status = orderModel.Status;
+                    }
+
+                    // Process each item; only update quantity
+                    foreach (var item in orderModel.Items)
+                    {
+                        var orderItem = order.Items.FirstOrDefault(i => i.ProductId == item.ProductId);
+                        if (orderItem != null)
+                        {
+                            int quantityChange = item.Quantity - orderItem.Quantity;
+
+                            // Adjust product quantity based on the change in order item quantity
+                            var product = await _context.Products.FindAsync(orderItem.ProductId);
+                            if (product != null && product.Quantity < quantityChange)
+                            {
+                                throw new InvalidOperationException($"Insufficient stock for ProductId {orderItem.ProductId}.");
+                            }
+
+                            product.Quantity -= quantityChange;
+                            orderItem.Quantity = item.Quantity; // Only quantity is updated
+                                                                // Note: UnitPrice and ProductId are not updated
+                        }
+                    }
+
+                    // Recalculate total price
+                    order.TotalPrice = order.Items.Sum(i => i.UnitPrice * i.Quantity);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    // Map to DTO
+                    var orderDto = new OrderDto
+                    {
+                        CustomerId = order.CustomerId,
+                        OrderId = order.OrderId,
+                        OrderDate = order.OrderDate,
+                        Status = order.Status,
+                        TotalPrice = order.TotalPrice,
+                        Items = order.Items.Select(i => new OrderItemDto
+                        {
+                            Id = i.Id,
+                            ProductId = i.ProductId,
+                            Quantity = i.Quantity,
+                            UnitPrice = i.UnitPrice
+                        }).ToList()
+                    };
+
+                    return Ok(orderDto);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return BadRequest(ex.Message);
+                }
+            }
+        }//End UpdateOrder
+
+        // PATCH: api/Order
+        [HttpPatch]
+        public async Task<ActionResult<OrderDto>> PatchOrder([FromBody] PatchOrderModel patchOrderModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("JSON Format Error");
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var order = await _context.Orders
+                        .Include(o => o.Items)
+                        .FirstOrDefaultAsync(o => o.OrderId == patchOrderModel.OrderId);
+
+                    if (order == null)
+                    {
+                        return NotFound("Order not found");
+                    }
+
+                    // Update fields if provided
+                    if (patchOrderModel.OrderDate.HasValue)
+                        order.OrderDate = patchOrderModel.OrderDate.Value;
+
+                    // Change status only if it is "Reserved" or "Completed"
+                    if (patchOrderModel.Status == "Reserved" || patchOrderModel.Status == "Completed")
+                    {
+                        order.Status = patchOrderModel.Status;
+                    }
+
+                    // Note: TotalPrice is calculated based on item quantities, not directly updated
+
+                    bool quantityUpdated = false;
+
+                    // Check if any item in the order is being updated
+                    if (patchOrderModel.Items != null && patchOrderModel.Items.Count > 0)
+                    {
+                        foreach (var patchItem in patchOrderModel.Items)
+                        {
+                            var orderItem = order.Items.FirstOrDefault(i => i.ProductId == patchItem.ProductId);
+                            if (orderItem != null)
+                            {
+                                var product = await _context.Products.FindAsync(patchItem.ProductId);
+                                if (product != null)
+                                {
+                                    int quantityChange = patchItem.Quantity - orderItem.Quantity;
+                                    if (product.Quantity < quantityChange)
+                                    {
+                                        throw new InvalidOperationException($"Insufficient stock for ProductId {patchItem.ProductId}.");
+                                    }
+                                    product.Quantity -= quantityChange;
+                                }
+
+                                orderItem.Quantity = patchItem.Quantity;
+                                quantityUpdated = true;
+                            }
+                        }
+                    }
+
+                    // Recalculate TotalPrice if quantity is updated
+                    if (quantityUpdated)
+                    {
+                        order.TotalPrice = order.Items.Sum(i => i.UnitPrice * i.Quantity);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    // Map the updated Order entity to OrderDto
+                    var orderDto = new OrderDto
+                    {
+                        CustomerId = order.CustomerId,
+                        OrderId = order.OrderId,
+                        OrderDate = order.OrderDate,
+                        Status = order.Status,
+                        TotalPrice = order.TotalPrice,
+                        Items = order.Items.Select(i => new OrderItemDto
+                        {
+                            Id = i.Id,
+                            ProductId = i.ProductId,
+                            Quantity = i.Quantity,
+                            UnitPrice = i.UnitPrice
+                        }).ToList()
+                    };
+
+                    await transaction.CommitAsync();
+
+                    return Ok(orderDto);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return BadRequest(ex.Message);
+                }
+            }
+        }//End PatchOrder
+
+
     }//End of Controller 
 }
