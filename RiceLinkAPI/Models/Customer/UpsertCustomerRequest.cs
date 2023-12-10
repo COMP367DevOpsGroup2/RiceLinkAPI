@@ -15,11 +15,9 @@ namespace RiceLinkAPI.Models.Customer
         [StringLength(50, ErrorMessage = "LastName size must be less than 50 characters.")]
         public string LastName { get; set; }
         [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Phone is required.")]
-        [Phone(ErrorMessage = "Invalid phone number format.")]
         [StringLength(20, ErrorMessage = "Phone number must be less than 20 characters.")]
         public string Phone { get; set; }
 

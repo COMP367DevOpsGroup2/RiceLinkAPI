@@ -72,6 +72,16 @@ namespace RiceLinkAPI.Controllers
                 return NotFound("Customer not found");
             }
 
+            // Manual validation for Email and Phone
+            if (!string.IsNullOrWhiteSpace(request.Email) && !new EmailAddressAttribute().IsValid(request.Email))
+            {
+                return BadRequest("Invalid email format.");
+            }
+            if (!string.IsNullOrWhiteSpace(request.Phone) && !new PhoneAttribute().IsValid(request.Phone))
+            {
+                return BadRequest("Invalid phone number format.");
+            }
+
             customer.FirstName = request.FirstName;
             customer.LastName = request.LastName;
             customer.Email = request.Email;
