@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
+#nullable disable
+
 namespace RiceLinkAPI.Models.Orders
 {
     public class OrderModel
@@ -50,3 +52,5 @@ namespace RiceLinkAPI.Models.Orders
     }
 
 }
+
+#nullable restore

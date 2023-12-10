@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+#nullable disable
+
 namespace RiceLinkAPI.Models.Orders
 {
     public class Order
@@ -61,3 +63,5 @@ namespace RiceLinkAPI.Models.Orders
  
 
 }
+
+#nullable restore
