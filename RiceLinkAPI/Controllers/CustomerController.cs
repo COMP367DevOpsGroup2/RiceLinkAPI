@@ -60,5 +60,30 @@ namespace RiceLinkAPI.Controllers
 
             return CreatedAtAction(nameof(GetCustomer), new { customerId = customer.CustomerId }, customer);
         }
+
+        // PUT: api/Customer
+        [HttpPut]
+        public async Task<IActionResult> UpdateCustomer([FromBody] UpsertCustomerRequest request)
+        {
+            var customer = await _context.CustomerModel.FindAsync(request.CustomerId);
+
+            if (customer == null)
+            {
+                return NotFound("Customer not found");
+            }
+
+            customer.FirstName = request.FirstName;
+            customer.LastName = request.LastName;
+            customer.Email = request.Email;
+            customer.Phone = request.Phone;
+            customer.Company = request.Company;
+            customer.Address = request.Address;
+
+            _context.Entry(customer).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }
