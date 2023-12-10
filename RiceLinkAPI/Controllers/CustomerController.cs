@@ -27,6 +27,19 @@ namespace RiceLinkAPI.Controllers
             return await _context.CustomerModel.ToListAsync();
         }
 
-       
+        // GET: api/Customer?CustomerId=5
+        [HttpGet("")]
+        public async Task<ActionResult<CustomerModel>> GetCustomer([FromQuery] int customerId)
+        {
+            var customer = await _context.CustomerModel.FindAsync(customerId);
+
+            if (customer == null)
+            {
+                return NotFound("Customer not found");
+            }
+
+            return customer;
+        }
+
     }
 }
